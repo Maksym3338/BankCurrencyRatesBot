@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "BankCurrencyRatesBot": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Test"
+      }
+    }
+  }
+}
