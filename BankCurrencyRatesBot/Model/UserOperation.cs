@@ -29,14 +29,9 @@ namespace BankCurrencyRatesBot.Model
     public class CurrencyRateOperation
     {
         public CurrencyType? Type { get; set; }
-        public List<string> CurrencyCodes { get; set; }
+        public ICollection<CurrencyCode> CurrencyCodes { get; set; }
         public DateTime? StartDate { get; set; } 
         public DateTime? EndDate { get; set; }
-
-        public CurrencyRateOperation()
-        {
-            CurrencyCodes = new List<string>();
-        }
 
         public enum CurrencyType
         {

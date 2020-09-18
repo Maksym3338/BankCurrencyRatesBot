@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BankCurrencyRatesBot.Enum;
 using BankCurrencyRatesBot.Model;
@@ -7,24 +8,28 @@ namespace BankCurrencyRatesBot
 {
     public class ConversionHelper
     {
-        public static void ConvertFromOneAmountToAnother(User user, List<Currency> getCurrenciesRates) // TODO rework with 3 parameters CurrencyFrom, CurrencyTo, Amount without user and List<Currency>
+        public static decimal? ConvertFromOneAmountToAnother(string currencyFrom, string currencyTo, decimal? amount, List<Currency> currenciesList)
         {
-            var getFirstCurrencyRate = getCurrenciesRates.FirstOrDefault(x => x.Code == user.Operation.ExchangeCurrencyOperation.CurrencyFrom);
-            var getSecondCurrencyRate = getCurrenciesRates.FirstOrDefault(x => x.Code == user.Operation.ExchangeCurrencyOperation.CurrencyTo);
+            var fromCurrency = currenciesList.FirstOrDefault(x => x.Code == currencyFrom);
+            var toCurrency = currenciesList.FirstOrDefault(x => x.Code == currencyTo);
+
+            if (fromCurrency == null || toCurrency == null)
+            {
+                throw new NullReferenceException();
+            }
 
 
-            if (user.Operation.ExchangeCurrencyOperation.CurrencyFrom == CurrencyType.UAH.ToString())
+            if (fromCurrency.Code == CurrencyType.UAH.ToString())
             {
-                user.Operation.ExchangeCurrencyOperation.Result = user.Operation.ExchangeCurrencyOperation.Amount / getSecondCurrencyRate.Rate;
+                return amount / toCurrency.Rate;
             }
-            else if(user.Operation.ExchangeCurrencyOperation.CurrencyTo == CurrencyType.UAH.ToString())
+
+            if (toCurrency.Code == CurrencyType.UAH.ToString())
             {
-                user.Operation.ExchangeCurrencyOperation.Result = user.Operation.ExchangeCurrencyOperation.Amount * getFirstCurrencyRate.Rate;
+                return amount * fromCurrency.Rate;
             }
-            else
-            {
-                user.Operation.ExchangeCurrencyOperation.Result = user.Operation.ExchangeCurrencyOperation.Amount * getFirstCurrencyRate.Rate / getSecondCurrencyRate.Rate;
-            }
+
+            return amount * fromCurrency.Rate / toCurrency.Rate;
         }
     }
 }

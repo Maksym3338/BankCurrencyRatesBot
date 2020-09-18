@@ -215,7 +215,11 @@ namespace BankCurrencyRatesBot
                                 {
                                     user.Operation.ExchangeCurrencyOperation.Date = result;
                                     var getCurrenciesRates = await _nbuClient.GetCurrencyRatesListAsync(DateTime.Today);
-                                    ConversionHelper.ConvertFromOneAmountToAnother(user, getCurrenciesRates);
+                                    user.Operation.ExchangeCurrencyOperation.Result = ConversionHelper.ConvertFromOneAmountToAnother(
+                                        user.Operation.ExchangeCurrencyOperation.CurrencyFrom,
+                                        user.Operation.ExchangeCurrencyOperation.CurrencyTo,
+                                        user.Operation.ExchangeCurrencyOperation.Amount,
+                                        getCurrenciesRates);
                                     var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(user.LocalizedCommands);
                                     string exchangeResultMessage = " ";
                                     exchangeResultMessage +=
@@ -346,7 +350,13 @@ namespace BankCurrencyRatesBot
 
                                 if (System.Enum.TryParse(message.Text, true, out CurrencyType currencyType))
                                 {
-                                    user.Operation.CurrencyRateOperation.CurrencyCodes.Add(message.Text);
+                                    user.Operation.CurrencyRateOperation.CurrencyCodes = new List<CurrencyCode>()
+                                    {
+                                        new CurrencyCode()
+                                        {
+                                            Code = message.Text
+                                        }
+                                    };
                                     var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyRatePeriodKeyboardMarkup(user.LocalizedCommands);
                                     await Bot.SendTextMessageAsync(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChoosePeriodMessage], replyMarkup: replyKeyboardMarkup);
 
@@ -414,7 +424,7 @@ namespace BankCurrencyRatesBot
                 _logger.LogError(ex, ex.Message);
             }
         }
-
+        
         private static async Task SendLanguageMessage(long chatId, string userFirstName, string messageText)
         {
             var user = ChatHelpers.FindUser(chatId);

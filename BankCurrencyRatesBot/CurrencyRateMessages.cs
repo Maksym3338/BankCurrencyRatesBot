@@ -17,7 +17,8 @@ namespace BankCurrencyRatesBot
 
         public string GetCurrenciesWithRatesMessage(User user)
         {
-            var getRates = _allCurrencies.Where(x => user.Operation.CurrencyRateOperation.CurrencyCodes.Contains(x.Code)).ToList();
+            var listCodes = user.Operation.CurrencyRateOperation.CurrencyCodes.Select(x => x.Code);
+            var getRates = _allCurrencies.Where(x => listCodes.Contains(x.Code)).ToList();
             var text = GetRatesMessage(getRates);
             return text;
         }
