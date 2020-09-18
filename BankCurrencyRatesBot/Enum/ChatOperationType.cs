@@ -1,6 +1,6 @@
 ﻿namespace BankCurrencyRatesBot.Enum
 {
-    public enum UserOperationType
+    public enum ChatOperationType
     {
         ExchangeCurrency,
         CurrencyRate

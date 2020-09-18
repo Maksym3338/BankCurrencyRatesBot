@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using User = BankCurrencyRatesBot.Model.User;
+using BankCurrencyRatesBot.NewModel;
 
 namespace BankCurrencyRatesBot
 {
     public class ChatHelpers
     {
-        // Find User
-        public static User FindUser(long userID)
+        // Find Chat
+        public static Chat FindChat(long chatId)
         {
-            var dbUser = TelegramHostedService.DbUser; //TODO rework
-            var user = dbUser.FirstOrDefault(x => x.Id == userID);
-            return user;
+            var chatDb = TelegramHostedService.DbChat; //TODO rework
+            var chat = chatDb.FirstOrDefault(x => x.ChatId == chatId);
+            return chat;
         }
 
         // Get command key from dictionary

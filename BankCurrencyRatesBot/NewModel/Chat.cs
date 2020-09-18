@@ -20,9 +20,9 @@ namespace BankCurrencyRatesBot.NewModel
             Operation = new ChatOperation();
         }
 
-        public void SetLocalizedCommands(string userFirstName, string messageText)
+        public void SetLocalizedCommands(string chatFirstName, string messageText)
         {
-            LocalizedCommands = LanguageHelper.ChooseLanguage(userFirstName, messageText);
+            LocalizedCommands = LanguageHelper.ChooseLanguage(chatFirstName, messageText);
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BankCurrencyRatesBot.Model;
-using User = BankCurrencyRatesBot.Model.User;
+using BankCurrencyRatesBot.NewModel;
 
 namespace BankCurrencyRatesBot
 {
@@ -15,9 +15,9 @@ namespace BankCurrencyRatesBot
             _allCurrencies = allCurrencies;
         }
 
-        public string GetCurrenciesWithRatesMessage(User user)
+        public string GetCurrenciesWithRatesMessage(Chat chat)
         {
-            var listCodes = user.Operation.CurrencyRateOperation.CurrencyCodes.Select(x => x.Code);
+            var listCodes = chat.Operation.CurrencyRateOperation.CurrencyCodes.Select(x => x.Code);
             var getRates = _allCurrencies.Where(x => listCodes.Contains(x.Code)).ToList();
             var text = GetRatesMessage(getRates);
             return text;

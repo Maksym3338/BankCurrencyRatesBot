@@ -7,7 +7,7 @@ namespace BankCurrencyRatesBot.NewModel
     {
         public int Id { get; set; }
         public long ChatId { get; set; }
-        public UserOperationType? Type { get; set; }
+        public ChatOperationType? Type { get; set; }
         public int ExchangeCurrencyOperationId { get; set; }
         public int CurrencyRateOperationId { get; set; }
 

@@ -7,55 +7,55 @@ namespace BankCurrencyRatesBot.Model
     public class MyKeyboardMarkup
     {
         // Get language KeyboardMarkup
-        public static ReplyKeyboardMarkup GetLanguageKeyboardMarkup(Dictionary<KeyCommands, string> userLocalizedCommands)
+        public static ReplyKeyboardMarkup GetLanguageKeyboardMarkup(Dictionary<KeyCommands, string> chatLocalizedCommands)
         {
             return new ReplyKeyboardMarkup(
                 new[]
                 {
-                    new KeyboardButton[] {userLocalizedCommands[KeyCommands.English]},
-                    new KeyboardButton[] {userLocalizedCommands[KeyCommands.Russian]},
-                    new KeyboardButton[] {userLocalizedCommands[KeyCommands.Ukrainian]},
+                    new KeyboardButton[] {chatLocalizedCommands[KeyCommands.English]},
+                    new KeyboardButton[] {chatLocalizedCommands[KeyCommands.Russian]},
+                    new KeyboardButton[] {chatLocalizedCommands[KeyCommands.Ukrainian]},
                 },
                 true);
         }
 
         // Get KeyboardMarkup when we choose Currency Rate or Convert Currencies
-        public static ReplyKeyboardMarkup GetCurrencyRateKeyboardMarkup(Dictionary<KeyCommands, string> userLocalizedCommands)
+        public static ReplyKeyboardMarkup GetCurrencyRateKeyboardMarkup(Dictionary<KeyCommands, string> chatLocalizedCommands)
         {
             return new ReplyKeyboardMarkup(
                 new[]
                 {
-                    new KeyboardButton[] { userLocalizedCommands[KeyCommands.CurrencyRate] },
-                    new KeyboardButton[] { userLocalizedCommands[KeyCommands.ExchangeCurrency] },
-                    new KeyboardButton[] { userLocalizedCommands[KeyCommands.ComeBack] }
+                    new KeyboardButton[] { chatLocalizedCommands[KeyCommands.CurrencyRate] },
+                    new KeyboardButton[] { chatLocalizedCommands[KeyCommands.ExchangeCurrency] },
+                    new KeyboardButton[] { chatLocalizedCommands[KeyCommands.ComeBack] }
                 },
                 true
             );
         }
 
         // Get exchange currencies codes KeyboardMarkup
-        public static ReplyKeyboardMarkup GetCurrencyKeyboardMarkup(Dictionary<KeyCommands, string> userLocalizedCommands)
+        public static ReplyKeyboardMarkup GetCurrencyKeyboardMarkup(Dictionary<KeyCommands, string> chatLocalizedCommands)
         {
             return new ReplyKeyboardMarkup(
                 new[]
                 {
-                    new KeyboardButton[] {userLocalizedCommands[KeyCommands.Usd], userLocalizedCommands[KeyCommands.Eur], userLocalizedCommands[KeyCommands.Gbp]},
-                    new KeyboardButton[] {userLocalizedCommands[KeyCommands.Top5]},
-                    new KeyboardButton[] { userLocalizedCommands[KeyCommands.AllCurrency]},
+                    new KeyboardButton[] {chatLocalizedCommands[KeyCommands.Usd], chatLocalizedCommands[KeyCommands.Eur], chatLocalizedCommands[KeyCommands.Gbp]},
+                    new KeyboardButton[] {chatLocalizedCommands[KeyCommands.Top5]},
+                    new KeyboardButton[] { chatLocalizedCommands[KeyCommands.AllCurrency]},
                 },
                 true);
         }
 
 
         // Get exchange currencies codes KeyboardMarkup
-        public static ReplyKeyboardMarkup GetCurrencyRatePeriodKeyboardMarkup(Dictionary<KeyCommands, string> userLocalizedCommands)
+        public static ReplyKeyboardMarkup GetCurrencyRatePeriodKeyboardMarkup(Dictionary<KeyCommands, string> chatLocalizedCommands)
         {
             return new ReplyKeyboardMarkup(
                 new[]
                 {
-                    new KeyboardButton[] { userLocalizedCommands[KeyCommands.Today], userLocalizedCommands[KeyCommands.Yesterday] },
-                    new KeyboardButton[] { userLocalizedCommands[KeyCommands.OneWeek], userLocalizedCommands[KeyCommands.OneMonth] },
-                    new KeyboardButton[] { userLocalizedCommands[KeyCommands.ChoosePeriod] },
+                    new KeyboardButton[] { chatLocalizedCommands[KeyCommands.Today], chatLocalizedCommands[KeyCommands.Yesterday] },
+                    new KeyboardButton[] { chatLocalizedCommands[KeyCommands.OneWeek], chatLocalizedCommands[KeyCommands.OneMonth] },
+                    new KeyboardButton[] { chatLocalizedCommands[KeyCommands.ChoosePeriod] },
                 },
                 true);
         }

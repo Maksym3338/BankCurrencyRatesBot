@@ -27,7 +27,7 @@ namespace BankCurrencyRatesBot
         private readonly NbuClient _nbuClient;
         private readonly IOptions<BotSettings> _botSettings;
 
-        public static List<User> DbUser = new List<User>();
+        public static List<Chat> DbChat = new List<Chat>();
 
 
         public TelegramHostedService(ILogger<TelegramHostedService> logger, NbuClient nbuClient, IOptions<BotSettings> botSettings)
@@ -79,17 +79,17 @@ namespace BankCurrencyRatesBot
 
             try
             {
-                var user = DbUser.FirstOrDefault(x => x.Id == message.Chat.Id);
+                var chat = DbChat.FirstOrDefault(x => x.ChatId == message.Chat.Id);
 
-                if (user == null)
+                if (chat == null)
                 {
-                    user = new User(messageEventArgs.Message.Chat.Id);
-                    DbUser.Add(user);
+                    chat = new Chat(messageEventArgs.Message.Chat.Id);
+                    DbChat.Add(chat);
                     await SendLanguageMessage(message.Chat.Id, message.Chat.FirstName, message.Text);
                     return;
                 }
 
-                var commandKey = ChatHelpers.GetKeyCommand(message.Text, user.LocalizedCommands);
+                var commandKey = ChatHelpers.GetKeyCommand(message.Text, chat.LocalizedCommands);
 
                 switch (commandKey)
                 {
@@ -100,8 +100,8 @@ namespace BankCurrencyRatesBot
                         }
                     case KeyCommands.ComeBack:
                         {
-                            var languageKeyboardMarkup = MyKeyboardMarkup.GetLanguageKeyboardMarkup(user.LocalizedCommands);
-                            await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.StartMessage],
+                            var languageKeyboardMarkup = MyKeyboardMarkup.GetLanguageKeyboardMarkup(chat.LocalizedCommands);
+                            await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.StartMessage],
                                 languageKeyboardMarkup);
                             return;
                         }
@@ -109,34 +109,34 @@ namespace BankCurrencyRatesBot
                     case KeyCommands.Russian:
                     case KeyCommands.English:
                         {
-                            user.Language = LanguageHelper.GetLanguage(message.Chat.FirstName, message.Text);
-                            user.SetLocalizedCommands(message.Chat.FirstName, message.Text);
-                            var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(user.LocalizedCommands);
-                            await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChooseAction],
+                            chat.Language = LanguageHelper.GetLanguage(message.Chat.FirstName, message.Text);
+                            chat.SetLocalizedCommands(message.Chat.FirstName, message.Text);
+                            var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(chat.LocalizedCommands);
+                            await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChooseAction],
                                 replyKeyboardMarkup);
                             return;
                         }
                     case KeyCommands.CurrencyRate:
                         {
-                            user.Operation.Type = UserOperationType.CurrencyRate;
+                            chat.Operation.Type = ChatOperationType.CurrencyRate;
                             break;
                         }
                     case KeyCommands.ExchangeCurrency:
                         {
-                            user.Operation.Type = UserOperationType.ExchangeCurrency;
+                            chat.Operation.Type = ChatOperationType.ExchangeCurrency;
                             break;
                         }
                 }
 
 
-                switch (user.Operation.Type)
+                switch (chat.Operation.Type)
                 {
-                    case UserOperationType.ExchangeCurrency:
+                    case ChatOperationType.ExchangeCurrency:
                         {
-                            if (user.Operation.ExchangeCurrencyOperation == null)
+                            if (chat.Operation.ExchangeCurrencyOperation == null)
                             {
-                                user.Operation.ExchangeCurrencyOperation = new ExchangeCurrencyOperation();
-                                await Bot.SendTextMessageAsync(message.Chat.Id, user.LocalizedCommands[KeyCommands.FirstExchangeCurrencyCodeMessage], replyMarkup: new ReplyKeyboardRemove());
+                                chat.Operation.ExchangeCurrencyOperation = new ExchangeCurrencyOperation();
+                                await Bot.SendTextMessageAsync(message.Chat.Id, chat.LocalizedCommands[KeyCommands.FirstExchangeCurrencyCodeMessage], replyMarkup: new ReplyKeyboardRemove());
                                 var rates = await _nbuClient.GetCurrencyRatesListAsync(DateTime.Today);
                                 var currencyRateMessages = new CurrencyRateMessages(rates);
                                 var codeMessage = currencyRateMessages.GetMessageRatesCodes();
@@ -145,7 +145,7 @@ namespace BankCurrencyRatesBot
                                 return;
                             }
 
-                            if (string.IsNullOrEmpty(user.Operation.ExchangeCurrencyOperation.CurrencyFrom))
+                            if (string.IsNullOrEmpty(chat.Operation.ExchangeCurrencyOperation.CurrencyFrom))
                             {
                                 var messageText = message.Text.Trim('/');
                                 var rates = await _nbuClient.GetCurrencyRatesListAsync(DateTime.Today);
@@ -155,21 +155,21 @@ namespace BankCurrencyRatesBot
 
                                 if (currenciesCodesList != null)
                                 {
-                                    user.Operation.ExchangeCurrencyOperation.CurrencyFrom = messageText;
-                                    await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.SecondExchangeCurrencyCodeMessage]);
+                                    chat.Operation.ExchangeCurrencyOperation.CurrencyFrom = messageText;
+                                    await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.SecondExchangeCurrencyCodeMessage]);
                                     await SendMessage(message.Chat.Id, codeMessage);
 
                                     return;
                                 }
 
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.TryAgain]);
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.FirstExchangeCurrencyCodeMessage]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.TryAgain]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.FirstExchangeCurrencyCodeMessage]);
                                 await SendMessage(message.Chat.Id, codeMessage);
 
                                 return;
                             }
 
-                            if (string.IsNullOrEmpty(user.Operation.ExchangeCurrencyOperation.CurrencyTo))
+                            if (string.IsNullOrEmpty(chat.Operation.ExchangeCurrencyOperation.CurrencyTo))
                             {
                                 var messageText = message.Text.Trim('/');
                                 var rates = await _nbuClient.GetCurrencyRatesListAsync(DateTime.Today);
@@ -180,83 +180,83 @@ namespace BankCurrencyRatesBot
 
                                 if (currenciesCodesList != null)
                                 {
-                                    user.Operation.ExchangeCurrencyOperation.CurrencyTo = messageText;
-                                    await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChooseExchangeAmountMessage]);
+                                    chat.Operation.ExchangeCurrencyOperation.CurrencyTo = messageText;
+                                    await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChooseExchangeAmountMessage]);
 
                                     return;
                                 }
 
 
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.TryAgain]);
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.SecondExchangeCurrencyCodeMessage]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.TryAgain]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.SecondExchangeCurrencyCodeMessage]);
                                 await SendMessage(message.Chat.Id, codeMessage);
 
 
                                 return;
                             }
 
-                            if (user.Operation.ExchangeCurrencyOperation.Amount.HasValue == false)
+                            if (chat.Operation.ExchangeCurrencyOperation.Amount.HasValue == false)
                             {
                                 //TODO read about cultures
                                 if (decimal.TryParse(message.Text, NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out decimal result))
                                 {
-                                    user.Operation.ExchangeCurrencyOperation.Amount = result;
-                                    await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChooseExchangeDayMessage]);
+                                    chat.Operation.ExchangeCurrencyOperation.Amount = result;
+                                    await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChooseExchangeDayMessage]);
 
                                     return;
                                 }
 
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.TryAgain]);
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChooseExchangeAmountMessage]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.TryAgain]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChooseExchangeAmountMessage]);
 
                                 return;
                             }
 
-                            if (user.Operation.ExchangeCurrencyOperation.Date.HasValue == false)
+                            if (chat.Operation.ExchangeCurrencyOperation.Date.HasValue == false)
                             {
                                 if (DateTime.TryParseExact(message.Text, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out DateTime result))
                                 {
-                                    user.Operation.ExchangeCurrencyOperation.Date = result;
+                                    chat.Operation.ExchangeCurrencyOperation.Date = result;
                                     var getCurrenciesRates = await _nbuClient.GetCurrencyRatesListAsync(DateTime.Today);
-                                    user.Operation.ExchangeCurrencyOperation.Result = ConversionHelper.ConvertFromOneAmountToAnother(
-                                        user.Operation.ExchangeCurrencyOperation.CurrencyFrom,
-                                        user.Operation.ExchangeCurrencyOperation.CurrencyTo,
-                                        user.Operation.ExchangeCurrencyOperation.Amount,
+                                    chat.Operation.ExchangeCurrencyOperation.Result = ConversionHelper.ConvertFromOneAmountToAnother(
+                                        chat.Operation.ExchangeCurrencyOperation.CurrencyFrom,
+                                        chat.Operation.ExchangeCurrencyOperation.CurrencyTo,
+                                        chat.Operation.ExchangeCurrencyOperation.Amount,
                                         getCurrenciesRates);
-                                    var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(user.LocalizedCommands);
+                                    var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(chat.LocalizedCommands);
                                     string exchangeResultMessage = " ";
                                     exchangeResultMessage +=
-                                        $"{user.Operation.ExchangeCurrencyOperation.Amount}/{user.Operation.ExchangeCurrencyOperation.CurrencyFrom} =" +
-                                        $" {user.Operation.ExchangeCurrencyOperation.Result}/{user.Operation.ExchangeCurrencyOperation.CurrencyTo}";
+                                        $"{chat.Operation.ExchangeCurrencyOperation.Amount}/{chat.Operation.ExchangeCurrencyOperation.CurrencyFrom} =" +
+                                        $" {chat.Operation.ExchangeCurrencyOperation.Result}/{chat.Operation.ExchangeCurrencyOperation.CurrencyTo}";
                                     await Bot.SendTextMessageAsync(message.Chat.Id, exchangeResultMessage, replyMarkup: replyKeyboardMarkup);
 
-                                    user.Operation = new ChatOperation();
+                                    chat.Operation = new ChatOperation();
 
                                     return;
                                 }
 
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.TryAgain]);
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChooseExchangeDayMessage]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.TryAgain]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChooseExchangeDayMessage]);
 
                                 return;
                             }
 
                             return;
                         }
-                    case UserOperationType.CurrencyRate:
+                    case ChatOperationType.CurrencyRate:
                         {
-                            if (user.Operation.CurrencyRateOperation == null)
+                            if (chat.Operation.CurrencyRateOperation == null)
                             {
-                                user.Operation.CurrencyRateOperation = new CurrencyRateOperation();
-                                var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyKeyboardMarkup(user.LocalizedCommands);
+                                chat.Operation.CurrencyRateOperation = new CurrencyRateOperation();
+                                var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyKeyboardMarkup(chat.LocalizedCommands);
                                 await Bot.SendTextMessageAsync(message.Chat.Id,
-                                    user.LocalizedCommands[KeyCommands.ChooseCurrency],
+                                    chat.LocalizedCommands[KeyCommands.ChooseCurrency],
                                     replyMarkup: replyKeyboardMarkup);
 
                                 return;
                             }
 
-                            if (user.Operation.CurrencyRateOperation.Type == null)
+                            if (chat.Operation.CurrencyRateOperation.Type == null)
                             {
                                 if (System.Enum.TryParse(commandKey.ToString(), true, out CurrencyType currencyOperation))
                                 {
@@ -264,7 +264,7 @@ namespace BankCurrencyRatesBot
                                     {
                                         case CurrencyType.Top5:
                                             {
-                                                user.Operation.CurrencyRateOperation.Type = CurrencyType.Top5;
+                                                chat.Operation.CurrencyRateOperation.Type = CurrencyType.Top5;
                                                 var rates = await _nbuClient.GetCurrencyRatesListAsync(DateTime.Today);
                                                 var currencyRateMessages = new CurrencyRateMessages(rates);
                                                 var text = currencyRateMessages.GetRatesMessage(rates
@@ -275,76 +275,76 @@ namespace BankCurrencyRatesBot
                                                             x.Code == CurrencyCode.CAD.ToString() ||
                                                             x.Code == CurrencyCode.RUB.ToString())
                                                         .OrderBy(x => x.Code).ToList());
-                                                await SendMessage(message.Chat.Id, text, MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(user.LocalizedCommands));
+                                                await SendMessage(message.Chat.Id, text, MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(chat.LocalizedCommands));
 
-                                                user.Operation = new ChatOperation();
+                                                chat.Operation = new ChatOperation();
 
                                                 return;
                                             }
                                         case CurrencyType.AllCurrency:
                                             {
                                                 var rates = await _nbuClient.GetCurrencyRatesListAsync(DateTime.Today);
-                                                user.Operation.CurrencyRateOperation.Type = CurrencyType.AllCurrency;
+                                                chat.Operation.CurrencyRateOperation.Type = CurrencyType.AllCurrency;
                                                 var currencyRateMessages = new CurrencyRateMessages(rates);
                                                 var text = currencyRateMessages.GetRatesMessage(rates);
-                                                await SendMessage(message.Chat.Id, text, MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(user.LocalizedCommands));
+                                                await SendMessage(message.Chat.Id, text, MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(chat.LocalizedCommands));
 
-                                                user.Operation = new ChatOperation();
+                                                chat.Operation = new ChatOperation();
 
                                                 return;
                                             }
 
                                         case CurrencyType.Today:
                                             {
-                                                user.Operation.CurrencyRateOperation.Type = CurrencyType.Today;
-                                                await GetCurrencyRateResult(user, message.Chat.Id, DateTime.Today);
+                                                chat.Operation.CurrencyRateOperation.Type = CurrencyType.Today;
+                                                await GetCurrencyRateResult(chat, message.Chat.Id, DateTime.Today);
 
-                                                user.Operation = new ChatOperation();
+                                                chat.Operation = new ChatOperation();
 
                                                 return;
                                             }
 
                                         case CurrencyType.Yesterday:
                                             {
-                                                user.Operation.CurrencyRateOperation.Type = CurrencyType.Yesterday;
-                                                await GetCurrencyRateResult(user, message.Chat.Id, DateTime.Today.AddDays(-1));
+                                                chat.Operation.CurrencyRateOperation.Type = CurrencyType.Yesterday;
+                                                await GetCurrencyRateResult(chat, message.Chat.Id, DateTime.Today.AddDays(-1));
 
-                                                user.Operation = new ChatOperation();
+                                                chat.Operation = new ChatOperation();
 
                                                 return;
                                             }
 
                                         case CurrencyType.OneWeek:
                                             {
-                                                user.Operation.CurrencyRateOperation.Type = CurrencyType.OneWeek;
-                                                await GetCurrencyRateResult(user, message.Chat.Id, DateTime.Today.AddDays(-7), DateTime.Today);
+                                                chat.Operation.CurrencyRateOperation.Type = CurrencyType.OneWeek;
+                                                await GetCurrencyRateResult(chat, message.Chat.Id, DateTime.Today.AddDays(-7), DateTime.Today);
 
-                                                user.Operation = new ChatOperation();
+                                                chat.Operation = new ChatOperation();
 
                                                 return;
                                             }
 
                                         case CurrencyType.OneMonth:
                                             {
-                                                user.Operation.CurrencyRateOperation.Type = CurrencyType.OneMonth;
-                                                await GetCurrencyRateResult(user, message.Chat.Id, DateTime.Today.AddMonths(-1), DateTime.Today);
+                                                chat.Operation.CurrencyRateOperation.Type = CurrencyType.OneMonth;
+                                                await GetCurrencyRateResult(chat, message.Chat.Id, DateTime.Today.AddMonths(-1), DateTime.Today);
 
-                                                user.Operation = new ChatOperation();
+                                                chat.Operation = new ChatOperation();
 
                                                 return;
                                             }
 
                                         case CurrencyType.ChoosePeriod:
                                             {
-                                                user.Operation.CurrencyRateOperation.Type = CurrencyType.ChoosePeriod;
-                                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChooseFirstDay], new ReplyKeyboardRemove());
+                                                chat.Operation.CurrencyRateOperation.Type = CurrencyType.ChoosePeriod;
+                                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChooseFirstDay], new ReplyKeyboardRemove());
 
                                                 return;
                                             }
                                         default:
                                             {
-                                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.TryAgain]);
-                                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChooseButtonBelow]);
+                                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.TryAgain]);
+                                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChooseButtonBelow]);
 
                                                 return;
                                             }
@@ -353,15 +353,15 @@ namespace BankCurrencyRatesBot
 
                                 if (System.Enum.TryParse(message.Text, true, out CurrencyCode currencyType))
                                 {
-                                    user.Operation.CurrencyRateOperation.CurrencyCodes = new List<NewModel.CurrencyCode>()
+                                    chat.Operation.CurrencyRateOperation.CurrencyCodes = new List<NewModel.CurrencyCode>()
                                     {
                                         new NewModel.CurrencyCode()
                                         {
                                             Code = message.Text
                                         }
                                     };
-                                    var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyRatePeriodKeyboardMarkup(user.LocalizedCommands);
-                                    await Bot.SendTextMessageAsync(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChoosePeriodMessage], replyMarkup: replyKeyboardMarkup);
+                                    var replyKeyboardMarkup = MyKeyboardMarkup.GetCurrencyRatePeriodKeyboardMarkup(chat.LocalizedCommands);
+                                    await Bot.SendTextMessageAsync(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChoosePeriodMessage], replyMarkup: replyKeyboardMarkup);
 
                                     return;
                                 }
@@ -369,39 +369,39 @@ namespace BankCurrencyRatesBot
                                 return;
                             }
 
-                            if (user.Operation.CurrencyRateOperation.StartDate == null ||
-                                user.Operation.CurrencyRateOperation.EndDate == null)
+                            if (chat.Operation.CurrencyRateOperation.StartDate == null ||
+                                chat.Operation.CurrencyRateOperation.EndDate == null)
                             {
                                 if (DateTime.TryParseExact(message.Text, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var result))
                                 {
-                                    if (user.Operation.CurrencyRateOperation.StartDate == null)
+                                    if (chat.Operation.CurrencyRateOperation.StartDate == null)
                                     {
-                                        user.Operation.CurrencyRateOperation.StartDate = result;
-                                        await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.ChooseSecondDay]);
+                                        chat.Operation.CurrencyRateOperation.StartDate = result;
+                                        await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.ChooseSecondDay]);
 
                                         return;
                                     }
 
-                                    user.Operation.CurrencyRateOperation.EndDate = result;
+                                    chat.Operation.CurrencyRateOperation.EndDate = result;
 
-                                    if (user.Operation.CurrencyRateOperation.EndDate == null)
+                                    if (chat.Operation.CurrencyRateOperation.EndDate == null)
                                     {
                                        throw new Exception();
                                     }
 
-                                    var rates = await _nbuClient.GetCurrencyRatesListAsync(user.Operation.CurrencyRateOperation.StartDate.Value,user.Operation.CurrencyRateOperation.EndDate.Value);
+                                    var rates = await _nbuClient.GetCurrencyRatesListAsync(chat.Operation.CurrencyRateOperation.StartDate.Value,chat.Operation.CurrencyRateOperation.EndDate.Value);
 
                                     var currencyMessageGenerator = new CurrencyRateMessages(rates);
-                                    var text = currencyMessageGenerator.GetCurrenciesWithRatesMessage(user);
-                                    await SendMessage(message.Chat.Id, text, MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(user.LocalizedCommands));
+                                    var text = currencyMessageGenerator.GetCurrenciesWithRatesMessage(chat);
+                                    await SendMessage(message.Chat.Id, text, MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(chat.LocalizedCommands));
 
 
-                                    user.Operation = new ChatOperation();
+                                    chat.Operation = new ChatOperation();
 
                                     return;
                                 }
 
-                                await SendMessage(message.Chat.Id, user.LocalizedCommands[KeyCommands.TryAgainChosenPeriod]);
+                                await SendMessage(message.Chat.Id, chat.LocalizedCommands[KeyCommands.TryAgainChosenPeriod]);
 
                                 return;
 
@@ -430,9 +430,9 @@ namespace BankCurrencyRatesBot
         
         private static async Task SendLanguageMessage(long chatId, string userFirstName, string messageText)
         {
-            var user = ChatHelpers.FindUser(chatId);
-            user.SetLocalizedCommands(userFirstName, messageText);
-            var languageKeyboardMarkup = MyKeyboardMarkup.GetLanguageKeyboardMarkup(user.LocalizedCommands);
+            var chat = ChatHelpers.FindChat(chatId);
+            chat.SetLocalizedCommands(userFirstName, messageText);
+            var languageKeyboardMarkup = MyKeyboardMarkup.GetLanguageKeyboardMarkup(chat.LocalizedCommands);
 
             await Bot.SendTextMessageAsync(
                 chatId: chatId,
@@ -442,13 +442,13 @@ namespace BankCurrencyRatesBot
                 replyMarkup: languageKeyboardMarkup);
         }
 
-        private async Task GetCurrencyRateResult(User user, long chatId, DateTime firstDay, DateTime? secondDay = null)
+        private async Task GetCurrencyRateResult(Chat chat, long chatId, DateTime firstDay, DateTime? secondDay = null)
         {
             var rates = await _nbuClient.GetCurrencyRatesListAsync(firstDay, secondDay);
             var currencyRateMessages = new CurrencyRateMessages(rates);
-            var text = currencyRateMessages.GetCurrenciesWithRatesMessage(user);
-            await SendMessage(chatId, text, MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(user.LocalizedCommands));
-            user.Operation.CurrencyRateOperation.CurrencyCodes.Clear();
+            var text = currencyRateMessages.GetCurrenciesWithRatesMessage(chat);
+            await SendMessage(chatId, text, MyKeyboardMarkup.GetCurrencyRateKeyboardMarkup(chat.LocalizedCommands));
+            chat.Operation.CurrencyRateOperation.CurrencyCodes.Clear();
         }
 
         private static async Task SendMessage(long chatId, string text, IReplyMarkup replyKeyboardMarkup = null)
