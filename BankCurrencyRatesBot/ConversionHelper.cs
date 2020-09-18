@@ -19,12 +19,12 @@ namespace BankCurrencyRatesBot
             }
 
 
-            if (fromCurrency.Code == CurrencyType.UAH.ToString())
+            if (fromCurrency.Code == CurrencyCode.UAH.ToString())
             {
                 return amount / toCurrency.Rate;
             }
 
-            if (toCurrency.Code == CurrencyType.UAH.ToString())
+            if (toCurrency.Code == CurrencyCode.UAH.ToString())
             {
                 return amount * fromCurrency.Rate;
             }

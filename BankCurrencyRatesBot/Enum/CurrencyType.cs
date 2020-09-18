@@ -2,11 +2,12 @@
 {
     public enum CurrencyType
     {
-        UAH = 980,
-        USD = 840,
-        EUR = 978,
-        GBP = 826,
-        CAD = 124,
-        RUB = 643
+        Today = 1,
+        Yesterday = 2,
+        OneWeek = 3,
+        OneMonth = 4,
+        ChoosePeriod = 5,
+        Top5 = 6,
+        AllCurrency = 7
     }
 }

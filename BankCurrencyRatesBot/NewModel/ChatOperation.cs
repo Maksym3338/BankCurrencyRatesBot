@@ -1,4 +1,5 @@
-﻿using BankCurrencyRatesBot.Model;
+﻿using BankCurrencyRatesBot.Enum;
+using BankCurrencyRatesBot.Model;
 
 namespace BankCurrencyRatesBot.NewModel
 {
@@ -6,8 +7,11 @@ namespace BankCurrencyRatesBot.NewModel
     {
         public int Id { get; set; }
         public long ChatId { get; set; }
-        public UserOperation.UserOperationType? Type { get; set; }
+        public UserOperationType? Type { get; set; }
         public int ExchangeCurrencyOperationId { get; set; }
         public int CurrencyRateOperationId { get; set; }
+
+        public ExchangeCurrencyOperation ExchangeCurrencyOperation { get; set; }
+        public CurrencyRateOperation CurrencyRateOperation { get; set; }
     }
 }

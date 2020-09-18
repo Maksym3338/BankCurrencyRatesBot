@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using BankCurrencyRatesBot.Enum;
+using BankCurrencyRatesBot.NewModel;
 using Languages = BankCurrencyRatesBot.Enum.Languages;
 
 namespace BankCurrencyRatesBot.Model
@@ -9,13 +10,13 @@ namespace BankCurrencyRatesBot.Model
         public long Id { get; }
         public Languages Language { get; set; } 
         public Dictionary<KeyCommands, string> LocalizedCommands { get; private set; }
-        public UserOperation Operation { get; set; }
+        public ChatOperation Operation { get; set; }
 
         public User(long id)
         {
             Id = id;
             LocalizedCommands = new Dictionary<KeyCommands, string>();
-            Operation = new UserOperation();
+            Operation = new ChatOperation();
         }
 
         public void SetLocalizedCommands(string userFirstName, string messageText)
