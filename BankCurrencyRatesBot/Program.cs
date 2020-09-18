@@ -37,6 +37,7 @@ namespace BankCurrencyRatesBot
                         c.BaseAddress = new Uri("https://bank.gov.ua/");
                     }).AddPolicyHandler(GetRetryPolicy());
                     services.Configure<BotSettings>(hostContext.Configuration);
+                    services.AddDbContext<ApplicationDbContext>();
                 });
 
             await hostBuilder.RunConsoleAsync();
